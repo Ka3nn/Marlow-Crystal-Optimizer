@@ -9,12 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Zip'i aç
+      - name: Projeyi bul
         run: |
-          unzip -o dokuz-tamamla.zip
+          ZIP=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
+          if [ -n "$ZIP" ]; then unzip -o "$ZIP" -d proje; fi
+          GRADLE=$(find . -name build.gradle -not -path './.git/*' | head -n 1)
+          if [ -z "$GRADLE" ]; then
+            echo "HATA: build.gradle bulunamadi."
+            exit 1
+          fi
+          DIR=$(dirname "$GRADLE")
+          echo "Proje klasoru: $DIR"
+          echo "PROJE=$DIR" >> "$GITHUB_ENV"
           if [ -f icon.png ]; then
-            mkdir -p dokuz-tamamla/src/main/resources/assets/dokuztamamla
-            cp icon.png dokuz-tamamla/src/main/resources/assets/dokuztamamla/icon.png
+            mkdir -p "$DIR/src/main/resources/assets/dokuztamamla"
+            cp icon.png "$DIR/src/main/resources/assets/dokuztamamla/icon.png"
           fi
       - uses: actions/setup-java@v4
         with:
@@ -25,8 +34,8 @@ jobs:
           gradle-version: '8.10'
       - name: Derle
         run: gradle build --no-daemon
-        working-directory: dokuz-tamamla
+        working-directory: ${{ env.PROJE }}
       - uses: actions/upload-artifact@v4
         with:
           name: dokuz-tamamla-jar
-          path: dokuz-tamamla/build/libs/*.jar
+          path: ${{ env.PROJE }}/build/libs/*.jar
