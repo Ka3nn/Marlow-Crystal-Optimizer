@@ -1,0 +1,32 @@
+name: Modu derle
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip'i aç
+        run: |
+          unzip -o dokuz-tamamla.zip
+          if [ -f icon.png ]; then
+            mkdir -p dokuz-tamamla/src/main/resources/assets/dokuztamamla
+            cp icon.png dokuz-tamamla/src/main/resources/assets/dokuztamamla/icon.png
+          fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
+      - name: Derle
+        run: gradle build --no-daemon
+        working-directory: dokuz-tamamla
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dokuz-tamamla-jar
+          path: dokuz-tamamla/build/libs/*.jar
