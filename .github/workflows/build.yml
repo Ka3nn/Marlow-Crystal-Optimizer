@@ -17,16 +17,19 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10'
+          gradle-version: '9.2.1'
 
       - name: Derle
         run: |
           ZIP=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
-          if [ -n "$ZIP" ]; then unzip -o "$ZIP" -d proje; fi
-          GRADLE=$(find . -name build.gradle -not -path './.git/*' | head -n 1)
+          if [ -n "$ZIP" ]; then
+            unzip -o "$ZIP" -d proje
+            GRADLE=$(find proje -name build.gradle | head -n 1)
+          else
+            GRADLE=$(find . -name build.gradle -not -path './.git/*' | head -n 1)
+          fi
           if [ -z "$GRADLE" ]; then echo "HATA: build.gradle yok"; exit 1; fi
           DIR=$(dirname "$GRADLE")
-          echo "Proje klasoru: $DIR"
           if [ -f icon.png ]; then
             mkdir -p "$DIR/src/main/resources/assets/dokuztamamla"
             cp icon.png "$DIR/src/main/resources/assets/dokuztamamla/icon.png"
